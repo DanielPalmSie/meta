@@ -23,6 +23,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Set the working directory to /var/www
 WORKDIR /data
 
+# Устанавливаем права доступа 777 для директории /data
+RUN chmod -R 777 /data
+
 # Define volume
 VOLUME /data
 

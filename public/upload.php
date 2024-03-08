@@ -1,37 +1,35 @@
 <?php
 
-$pdo = new PDO('pgsql:host=postgres;dbname=your_db', 'your_username', 'your_password');
+$tempDir = __DIR__.'/uploads/to/temp/dir'; // Укажите путь к временной директории
+$fileName = $_POST['name'];
+$fileIndex = $_POST['index'];
 
-// Предположим, что у вас уже есть PDO подключение к базе данных
-// $pdo = new PDO('pgsql:host=your_host;dbname=your_db', 'your_username', 'your_password');
-
-// Установите заголовки для ответа в формате JSON
-header('Content-Type: application/json');
-
-// Предположим, что входные данные поступают в формате JSON
-$inputData = json_decode(file_get_contents('php://input'), true);
-$fileName = $inputData['fileName'];
-
-// Инициализируйте индекс последнего загруженного чанка как -1, что указывает на отсутствие загрузок
-$lastChunkIndex = -1;
-
-try {
-    // Подготовьте запрос к базе данных для получения максимального индекса чанка для заданного файла
-    $stmt = $pdo->prepare("SELECT MAX(chunk_index) as last_chunk_index FROM chunk_status WHERE file_name = :fileName");
-    $stmt->execute(['fileName' => $fileName]);
-
-    // Получите результат
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Если результат найден, обновите $lastChunkIndex
-    if ($result && $result['last_chunk_index'] !== null) {
-        $lastChunkIndex = (int)$result['last_chunk_index'];
-    }
-
-    // Отправьте индекс последнего загруженного чанка в ответе
-    echo json_encode(['lastUploadedChunkIndex' => $lastChunkIndex]);
-} catch (PDOException $e) {
-    // Если произошла ошибка, отправьте код состояния 500
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+if (!is_dir($tempDir)) {
+    mkdir($tempDir, 0777, true);
 }
+
+move_uploaded_file($_FILES['file']['tmp_name'], "$tempDir/$fileName.part.$fileIndex");
+
+// Скрипт для объединения чанков (см. следующий шаг) может быть вызван здесь после загрузки последнего чанка
+// Этот код предполагает, что вы знаете, когда загружены все чанки,
+// например, после загрузки чанка с максимальным индексом
+
+$finalDir = __DIR__.'/uploads/to/final/dir'; // Укажите путь к директории для итогового файла
+
+/*if (!is_dir($finalDir)) {
+    mkdir($tempDir, 0777, true);
+}
+
+$filePath = "$tempDir/$fileName.part.*";
+$fileParts = glob($filePath);
+sort($fileParts, SORT_NATURAL);
+
+$finalFile = fopen("$finalDir/$fileName", 'wb');
+
+foreach ($fileParts as $filePart) {
+    $chunk = file_get_contents($filePart);
+    fwrite($finalFile, $chunk);
+    unlink($filePart); // Опционально: удаление чанка после его добавления
+}
+
+fclose($finalFile);*/

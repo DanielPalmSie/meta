@@ -1,1 +1,0 @@
-sudo ssh -i "otus-daniel.pem" ubuntu@ec2-51-20-254-66.eu-north-1.compute.amazonaws.com
