@@ -1,35 +1,28 @@
 <?php
 
+$pdo = new PDO('pgsql:host=postgres;dbname=postgres', 'your_username', 'your_password');
+
 $tempDir = __DIR__.'/uploads/to/temp/dir'; // Укажите путь к временной директории
 $fileName = $_POST['name'];
 $fileIndex = $_POST['index'];
+$fileSize = $_FILES['file']['size']; // Получаем размер файла
 
 if (!is_dir($tempDir)) {
     mkdir($tempDir, 0777, true);
 }
 
-move_uploaded_file($_FILES['file']['tmp_name'], "$tempDir/$fileName.part.$fileIndex");
+$targetFilePath = "$tempDir/$fileName.part.$fileIndex";
+if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFilePath)) {
+    // Файл успешно загружен, теперь добавляем информацию о чанке в базу данных
+    $query = "INSERT INTO file_chunks (file_id, chunk_index, chunk_size, chunk_data) VALUES (:file_id, :chunk_index, :chunk_size, :chunk_data)";
+    $statement = $pdo->prepare($query);
 
-// Скрипт для объединения чанков (см. следующий шаг) может быть вызван здесь после загрузки последнего чанка
-// Этот код предполагает, что вы знаете, когда загружены все чанки,
-// например, после загрузки чанка с максимальным индексом
+    $statement->execute([
+        ':file_id' => $fileName, // Используем имя файла как идентификатор файла
+        ':chunk_index' => $fileIndex,
+        ':chunk_size' => $fileSize,
+        ':chunk_data' => null // Если вы храните данные чанка в файловой системе, оставьте это поле как null или уберите его
+    ]);
 
-$finalDir = __DIR__.'/uploads/to/final/dir'; // Укажите путь к директории для итогового файла
 
-/*if (!is_dir($finalDir)) {
-    mkdir($tempDir, 0777, true);
 }
-
-$filePath = "$tempDir/$fileName.part.*";
-$fileParts = glob($filePath);
-sort($fileParts, SORT_NATURAL);
-
-$finalFile = fopen("$finalDir/$fileName", 'wb');
-
-foreach ($fileParts as $filePart) {
-    $chunk = file_get_contents($filePart);
-    fwrite($finalFile, $chunk);
-    unlink($filePart); // Опционально: удаление чанка после его добавления
-}
-
-fclose($finalFile);*/
