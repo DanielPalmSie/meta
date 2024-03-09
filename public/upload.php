@@ -1,37 +1,20 @@
 <?php
 
-$pdo = new PDO('pgsql:host=postgres;dbname=your_db', 'your_username', 'your_password');
+require __DIR__ . '/../vendor/autoload.php';
 
-// Предположим, что у вас уже есть PDO подключение к базе данных
-// $pdo = new PDO('pgsql:host=your_host;dbname=your_db', 'your_username', 'your_password');
+use Meta\Project\Database;
+use Meta\Project\FileManager;
 
-// Установите заголовки для ответа в формате JSON
-header('Content-Type: application/json');
+$database = new Database();
+$fileManager = new FileManager($database);
 
-// Предположим, что входные данные поступают в формате JSON
-$inputData = json_decode(file_get_contents('php://input'), true);
-$fileName = $inputData['fileName'];
+$fileName = $_POST['name'];
+$fileIndex = $_POST['index'];
+$totalChunks = $_POST['totalChunks'];
 
-// Инициализируйте индекс последнего загруженного чанка как -1, что указывает на отсутствие загрузок
-$lastChunkIndex = -1;
-
-try {
-    // Подготовьте запрос к базе данных для получения максимального индекса чанка для заданного файла
-    $stmt = $pdo->prepare("SELECT MAX(chunk_index) as last_chunk_index FROM chunk_status WHERE file_name = :fileName");
-    $stmt->execute(['fileName' => $fileName]);
-
-    // Получите результат
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Если результат найден, обновите $lastChunkIndex
-    if ($result && $result['last_chunk_index'] !== null) {
-        $lastChunkIndex = (int)$result['last_chunk_index'];
+if ($fileManager->uploadChunk($fileName, $fileIndex, $_FILES['file'])) {
+    if ($fileManager->checkAllChunksUploaded($fileName, $totalChunks)) {
+        $finalFilePath = $fileManager->mergeChunks($fileName, $totalChunks);
+        // Теперь у вас есть полный файл в $finalFilePath
     }
-
-    // Отправьте индекс последнего загруженного чанка в ответе
-    echo json_encode(['lastUploadedChunkIndex' => $lastChunkIndex]);
-} catch (PDOException $e) {
-    // Если произошла ошибка, отправьте код состояния 500
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
 }
