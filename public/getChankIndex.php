@@ -2,8 +2,7 @@
 
 $pdo = new PDO('pgsql:host=postgres;dbname=postgres', 'your_username', 'your_password');
 
-// Получаем $fileName из запроса
-$fileName = $_POST['name'] ?? ''; // Используйте соответствующий метод запроса (GET, POST)
+$fileName = $_POST['name'] ?? '';
 
 if ($fileName) {
     // Подготавливаем и выполняем SQL-запрос для поиска максимального индекса чанка для заданного file_id
