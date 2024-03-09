@@ -15,6 +15,5 @@ $totalChunks = $_POST['totalChunks'];
 if ($fileManager->uploadChunk($fileName, $fileIndex, $_FILES['file'])) {
     if ($fileManager->checkAllChunksUploaded($fileName, $totalChunks)) {
         $finalFilePath = $fileManager->mergeChunks($fileName, $totalChunks);
-        // Теперь у вас есть полный файл в $finalFilePath
     }
 }
