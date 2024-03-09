@@ -1,10 +1,13 @@
 document.getElementById('upload-button').addEventListener('click', function() {
     const CHUNK_SIZE = 1000000; // 1MB
     let file = document.getElementById('file-input').files[0];
+    const uploadStatus = document.getElementById('upload-status');
     if (!file) {
-        console.log("No file selected.");
+        uploadStatus.innerHTML = `<div class="alert alert-danger" role="alert">No file selected.</div>`;
         return;
     }
+
+    uploadStatus.innerHTML = `<div class="alert alert-info">Starting upload...</div>`;
 
     let formData = new FormData();
     formData.append('name', file.name);
@@ -33,20 +36,23 @@ document.getElementById('upload-button').addEventListener('click', function() {
                 formData.append('file', chunk);
                 formData.append('name', file.name);
                 formData.append('index', actualIndex);
-                console.log(totalChunks);
                 formData.append('totalChunks', totalChunks);
 
                 fetch('/upload-chunks', {
                     method: 'POST',
                     body: formData
                 }).then(response => {
-                    // Обработка ответа
+                    if (actualIndex === totalChunks - 1) {
+                        uploadStatus.innerHTML = `<div class="alert alert-success">Upload complete!</div>`;
+                    } else {
+                        uploadStatus.innerHTML = `<div class="alert alert-warning">Uploading chunk ${actualIndex + 1} of ${totalChunks}...</div>`;
+                    }
                 }).catch(error => {
-                    // Обработка ошибки
+                    uploadStatus.innerHTML = `<div class="alert alert-danger" role="alert">An error occurred: ${error.message}</div>`;
                 });
             });
         })
         .catch(error => {
-            console.error('Error fetching last chunk index:', error);
+            uploadStatus.innerHTML = `<div class="alert alert-danger" role="alert">Error fetching last chunk index: ${error.message}</div>`;
         });
 });
