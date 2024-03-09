@@ -18,7 +18,7 @@ if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFilePath)) {
     $statement = $pdo->prepare($query);
 
     $statement->execute([
-        ':file_id' => $fileName, // Используем имя файла как идентификатор файла
+        ':file_id' => $fileName,
         ':chunk_index' => $fileIndex,
         ':chunk_size' => $_FILES['file']['size'],
     ]);
@@ -42,8 +42,12 @@ if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFilePath)) {
         }
 
         fclose($handle);
+        // Удаляем информацию о чанках из базы данных
+        $deleteQuery = "DELETE FROM file_chunks WHERE file_id = :file_id";
+        $deleteStatement = $pdo->prepare($deleteQuery);
+        $deleteStatement->execute([':file_id' => $fileName]);
+
         // Теперь у вас есть полный файл в $finalFilePath
         // Вы можете переместить его куда угодно или сделать доступным для скачивания
     }
 }
-
