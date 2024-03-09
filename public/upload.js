@@ -28,7 +28,7 @@ document.getElementById('upload-button').addEventListener('click', function() {
             }
 
             chunks.forEach((chunk, index) => {
-                let actualIndex = lastChunkIndex + 1 + index;
+                let actualIndex = lastChunkIndex + index;
                 let formData = new FormData();
                 formData.append('file', chunk);
                 formData.append('name', file.name);
@@ -40,9 +40,9 @@ document.getElementById('upload-button').addEventListener('click', function() {
                     method: 'POST',
                     body: formData
                 }).then(response => {
-
+                    // Обработка ответа
                 }).catch(error => {
-
+                    // Обработка ошибки
                 });
             });
         })
