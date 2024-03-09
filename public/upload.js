@@ -17,6 +17,7 @@ document.getElementById('upload-button').addEventListener('click', function() {
     }).then(response => response.json())
         .then(data => {
             let lastChunkIndex = data.last_chunk_index;
+            let totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             let start = (lastChunkIndex + 1) * CHUNK_SIZE;
             let end = start + CHUNK_SIZE;
             let chunks = [];
@@ -28,13 +29,14 @@ document.getElementById('upload-button').addEventListener('click', function() {
                 end = start + CHUNK_SIZE;
             }
 
-            // Загружаем чанки начиная с последнего индекса
+            // Загружаем чанки начиная с последнего индекса и отправляем общее количество чанков
             chunks.forEach((chunk, index) => {
                 let actualIndex = lastChunkIndex + 1 + index;
                 let formData = new FormData();
                 formData.append('file', chunk);
                 formData.append('name', file.name);
                 formData.append('index', actualIndex);
+                formData.append('totalChunks', totalChunks); // Добавляем общее количество чанков
 
                 fetch('/upload-chunks', { // Убедитесь, что этот URL верный для загрузки чанков
                     method: 'POST',
