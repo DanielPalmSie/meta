@@ -2,11 +2,13 @@
 
 namespace Meta\Project;
 
+use PDO;
+
 class Database {
-    private $pdo;
+    private PDO $pdo;
 
     public function __construct() {
-        $this->pdo = new \PDO('pgsql:host=postgres;dbname=postgres', 'your_username', 'your_password');
+        $this->pdo = new PDO('pgsql:host=postgres;dbname=postgres', 'your_username', 'your_password');
     }
 
     public function query($query, $params = []) {

@@ -2,15 +2,13 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Meta\Project\Database;
-use Meta\Project\FileManager;
+use Meta\Project\App;
 
-$database = new Database();
-$fileManager = new FileManager($database);
+$app = new App();
 
 $fileName = $_POST['name'] ?? '';
 if ($fileName) {
-    $lastChunkIndex = $fileManager->getLastChunkIndex($fileName);
+    $lastChunkIndex = $app->getLastChunkIndex($fileName);
     echo json_encode(['last_chunk_index' => $lastChunkIndex]);
 } else {
     http_response_code(400);
