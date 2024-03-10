@@ -1,5 +1,5 @@
 document.getElementById('upload-button').addEventListener('click', function() {
-    const CHUNK_SIZE = 1000000; // 1MB
+    const CHUNK_SIZE = 1000000;
     let file = document.getElementById('file-input').files[0];
     const uploadStatus = document.getElementById('upload-status');
     if (!file) {
