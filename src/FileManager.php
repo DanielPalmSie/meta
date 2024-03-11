@@ -3,8 +3,8 @@
 namespace Meta\Project;
 
 class FileManager {
-    private $database;
-    private $tempDir = __DIR__.'/../public/uploads/to/temp/dir';
+    private Database $database;
+    private string $tempDir = __DIR__.'/../public/uploads/to/temp/dir';
 
     public function __construct(Database $database) {
         $this->database = $database;
@@ -19,7 +19,8 @@ class FileManager {
         return $result ? $result['last_chunk_index'] : -1;
     }
 
-    public function uploadChunk($fileId, $chunkIndex, $file) {
+    public function uploadChunk($fileId, $chunkIndex, $file): bool
+    {
         $targetFilePath = "$this->tempDir/$fileId.part.$chunkIndex";
         if (move_uploaded_file($file['tmp_name'], $targetFilePath)) {
             $query = "INSERT INTO file_chunks (file_id, chunk_index, chunk_size) VALUES (:file_id, :chunk_index, :chunk_size)";
@@ -33,13 +34,15 @@ class FileManager {
         return false;
     }
 
-    public function checkAllChunksUploaded($fileId, $totalChunks) {
+    public function checkAllChunksUploaded($fileId, $totalChunks): bool
+    {
         $query = "SELECT COUNT(*) FROM file_chunks WHERE file_id = :file_id";
         $uploadedChunks = $this->database->query($query, [':file_id' => $fileId])->fetchColumn();
         return $uploadedChunks == $totalChunks;
     }
 
-    public function mergeChunks($fileId, $totalChunks) {
+    public function mergeChunks($fileId, $totalChunks): string
+    {
         $finalFilePath = "$this->tempDir/$fileId";
         $handle = fopen($finalFilePath, 'wb');
 
@@ -55,7 +58,8 @@ class FileManager {
         return $finalFilePath;
     }
 
-    private function clearChunks($fileId) {
+    private function clearChunks($fileId): void
+    {
         $deleteQuery = "DELETE FROM file_chunks WHERE file_id = :file_id";
         $this->database->query($deleteQuery, [':file_id' => $fileId]);
     }
